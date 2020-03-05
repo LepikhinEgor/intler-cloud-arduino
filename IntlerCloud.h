@@ -1,6 +1,13 @@
 #ifndef IntlerCloud_h
 #define IntlerCloud_h
 
+struct SensorValue {
+  String name;
+  double value;
+  bool constantly;
+  SensorValue *next;
+};
+
 class Cloud
 {
   public:
@@ -12,8 +19,8 @@ class Cloud
     void setDevice(String device);
     
     void connect();
-    void addValue(String name, double value);
     bool updated();
+    void sendValue(String name, double value, bool constantly);
     void addCommand(String name, void (*orderFunction)(double));
   private:
     String login;
@@ -22,6 +29,9 @@ class Cloud
     bool isUpdated;
     void sendRequest();
     String prepareUrl();
+    SensorValue *sensorsList;
+    void addSensorValue(SensorValue* value);
 };
+
  
 #endif
