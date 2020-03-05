@@ -23,15 +23,17 @@ class Cloud
     void sendValue(String name, double value, bool constantly);
     void addCommand(String name, void (*orderFunction)(double));
   private:
+    int interval;
+    IPAddress* server;
+    IPAddress* generatedIp;
     String login;
     String password;
     String device;
     bool isUpdated;
     void sendRequest();
-    String prepareUrl();
+    String getRequestBody();
     SensorValue *sensorsList;
     void addSensorValue(SensorValue* value);
 };
-
  
 #endif

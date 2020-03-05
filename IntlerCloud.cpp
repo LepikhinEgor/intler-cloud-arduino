@@ -49,4 +49,47 @@ void Cloud::addSensorValue(SensorValue* value) {
   *(iter->next) = *value;
 }
 
+String Cloud::getRequestBody() {
+  String requestBody = "{\"login\":\"" + login + "\",";
+  requestBody += "\"password\":\"" + password + "\",";
+  requestBody += "\"deviceName\":\"" + device + "\",";
+  requestBody += "\"deviceType\":\"Arduino\",\"sensorsValue\":{";
+  
+  SensorValue* iter = sensorsList;
+  while (iter->next != NULL) {
+    requestBody += "\"" + iter->name + "\":" + iter->value + "," ;
+    iter = iter->next;
+  }
+  requestBody += "\"" + iter->name + "\":" + iter->value + "}, \"ordersAccepted\":[]}";
+  
+  return requestBody;
+}
+
+void Cloud::sendRequest() {
+  EthernetClient client;
+  String data = getRequestBody();
+  if (client.connect(server, 8080)) {
+    Serial.println("connected");
+    client.println("POST /intler_iot_war_exploded/send-device-data HTTP/1.1");
+    client.println("Host: 192.168.0.42:8080");//????????????????
+    client.println("Content-Type: application/json");
+    client.println("Connection: close");
+    client.print("Content-Length: ");
+    client.println(data.length());
+    client.println();
+    client.print(data);
+    client.println();
+  }
+  else {
+    Serial.println("connection failed");
+  }
+
+//  while (client.available()) {
+//    char c = client.read();
+//    Serial.print(c);
+//    cloudInput.concat(c);
+//  }
+//  executeCloudOrders(cloudInput.substring(cloudInput.indexOf("{"),cloudInput.indexOf("}") + 1));
+//  cloudInput = "";
+}
 
