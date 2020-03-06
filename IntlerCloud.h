@@ -1,6 +1,13 @@
 #ifndef IntlerCloud_h
 #define IntlerCloud_h
 
+#define DEFAULT_INTERVAL 5000
+
+struct Order {
+  String name;
+  Order* next;
+};
+
 struct SensorValue {
   String name;
   double value;
@@ -19,10 +26,13 @@ class Cloud
     void setDevice(String device);
     
     void connect();
+    void run();
     bool updated();
     void sendValue(String name, double value, bool constantly);
     void addCommand(String name, void (*orderFunction)(double));
   private:
+    Order* receivedOrders;
+    long requestTiming;
     int interval;
     IPAddress* server;
     IPAddress* generatedIp;
@@ -34,6 +44,9 @@ class Cloud
     String getRequestBody();
     SensorValue *sensorsList;
     void addSensorValue(SensorValue* value);
+    void parseHttpResponce(String responce);
+    void executeOrder(String orderStr);
 };
+
  
 #endif
