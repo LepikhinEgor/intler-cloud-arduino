@@ -9,7 +9,7 @@ struct Order {
 };
 
 struct SensorValue {
-  String name;
+  char name[30];
   double value;
   bool constantly;
   SensorValue *next;
@@ -30,6 +30,7 @@ class Cloud
     bool updated();
     void sendValue(String name, double value, bool constantly);
     void addCommand(String name, void (*orderFunction)(double));
+    void printValuesList();
   private:
     Order* receivedOrders;
     long requestTiming;
@@ -48,5 +49,4 @@ class Cloud
     void executeOrder(String orderStr);
 };
 
- 
 #endif

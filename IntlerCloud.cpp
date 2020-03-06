@@ -1,8 +1,11 @@
-#include "InlerCloud.h"
-
 Cloud::Cloud()
 {
   login = password = device = "";
+  
+  IPAddress intlerCloud(79, 143, 30, 97);
+  server = &intlerCloud;
+
+  interval = DEFAULT_INTERVAL;
 }
 
 Cloud::Cloud(String login, String password, String device)
@@ -10,6 +13,12 @@ Cloud::Cloud(String login, String password, String device)
   this->login = login;
   this->password = password;
   this->device = device;
+
+//  IPAddress* intlerCloud(79, 143, 30, 97);
+  IPAddress* intlerCloud = new IPAddress(192,168,0,2);
+  server = intlerCloud;
+
+  interval = DEFAULT_INTERVAL;
 }
 
 void Cloud::setLogin(String login) {
@@ -23,22 +32,24 @@ void Cloud::setPassword(String password) {
 void Cloud::setDevice(String device) {
   this->device = device;
 }
+
 bool Cloud::updated() {
   return isUpdated;
 }
 
 void Cloud::sendValue(String name, double value, bool constantly) {
-  SensorValue newSensorValue;
-  newSensorValue.name = name;
-  newSensorValue.value = value;
-  newSensorValue.constantly = constantly;
-  
-  addSensorValue(&newSensorValue);
+  SensorValue* newSensorValue = new SensorValue;
+  name.toCharArray(newSensorValue->name, 30);
+  newSensorValue->value = value;
+  newSensorValue->constantly = constantly;
+  newSensorValue->next = NULL;
+
+  addSensorValue(newSensorValue);
 }
 
 void Cloud::addSensorValue(SensorValue* value) {
   if (sensorsList == NULL) {
-    *sensorsList = *value;
+    sensorsList = value; 
     return;
   }
 
@@ -46,33 +57,37 @@ void Cloud::addSensorValue(SensorValue* value) {
   while (iter->next != NULL) 
     iter = iter->next;
 
-  *(iter->next) = *value;
+  (iter->next) = value;
 }
 
 String Cloud::getRequestBody() {
   String requestBody = "{\"login\":\"" + login + "\",";
-  requestBody += "\"password\":\"" + password + "\",";
+  requestBody += "\'password\':\"" + password + "\",";
   requestBody += "\"deviceName\":\"" + device + "\",";
   requestBody += "\"deviceType\":\"Arduino\",\"sensorsValue\":{";
-  
+
   SensorValue* iter = sensorsList;
-  while (iter->next != NULL) {
-    requestBody += "\"" + iter->name + "\":" + iter->value + "," ;
-    iter = iter->next;
+  if (iter == NULL) 
+    requestBody += "}";
+  else {
+    while (iter->next != NULL) {
+      requestBody += "\"" + String(iter->name) + "\":" + String(iter->value) + "," ;
+      iter = iter->next;
+    }
+    requestBody += "\"" + String(iter->name) + "\":" + String(iter->value) + "}";
   }
-  requestBody += "\"" + iter->name + "\":" + iter->value + "}, \"ordersAccepted\":[]}";
+  requestBody += ", \"ordersAccepted\":[]}";
   
   return requestBody;
 }
 
-
 void Cloud::sendRequest() {
   EthernetClient client;
   String data = getRequestBody();
-  if (client.connect(server, 8080)) {
+  if (client.connect(*server, 8080)) {
     Serial.println("connected");
     client.println("POST /intler_iot_war_exploded/send-device-data HTTP/1.1");
-    client.println("Host: 192.168.0.42:8080");//????????????????
+    client.println("Host: 192.168.0.2:8080");//????????????????
     client.println("Content-Type: application/json");
     client.println("Connection: close");
     client.print("Content-Length: ");
@@ -96,14 +111,16 @@ void Cloud::sendRequest() {
 }
 
 void Cloud::connect() {
-  byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
+  Serial.println("try connect");
+  byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xEA };
+
+  IPAddress generatedSelfId(192,168,0,54);
+  generatedIp = &generatedSelfId;
+  Ethernet.begin(mac, *generatedIp);
   
-  if (Ethernet.begin(mac) == 0) {
-    Serial.println("Failed to configure Ethernet using DHCP");
-    IPAddress generatedSelfId(192,168,0,54);
-    generatedIp = &generatedSelfId;
-    Ethernet.begin(mac, generatedIp);
-  }
+delay(4000);
+  Serial.println("Connected");
+
 }
 
 void Cloud::run() {
@@ -147,13 +164,13 @@ void Cloud::executeOrder(String str) {
   String val = str.substring(str.indexOf(":") + 1);
   Serial.println("name " + orderName + " val " + val);
   
-  Order newOrder;
-  newOrder.name = orderName;
+  Order* newOrder = new Order;
+  newOrder->name = orderName;
   Order* iter = receivedOrders;
   while (iter->next != NULL) 
     iter = iter->next;
 
-  *(iter->next) = newOrder;
+  iter->next = newOrder;
   
 
   float floatVar;
@@ -178,3 +195,20 @@ void Cloud::executeOrder(String str) {
     }
 }
 
+ 
+// директивы #include и код помещается здесь
+
+void Cloud::printValuesList() {
+  Serial.println("xyita");
+  SensorValue* iter = sensorsList;
+  if (iter != NULL) {
+    while (iter->next != NULL) {
+      Serial.println(iter->name);
+      Serial.println(iter->value);
+      Serial.println(iter->next == NULL);
+      iter = iter->next;
+    }
+    Serial.println(iter->name);
+    Serial.println(iter->value);
+    Serial.println(iter->next == NULL);
+  }
