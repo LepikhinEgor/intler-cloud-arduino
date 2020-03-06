@@ -3,6 +3,12 @@
 
 #define DEFAULT_INTERVAL 5000
 
+struct Command {
+  String name;
+  void (*procedure)(double);
+  Command* next;
+};
+
 struct Order {
   String name;
   Order* next;
@@ -31,7 +37,9 @@ class Cloud
     void sendValue(String name, double value, bool constantly);
     void addCommand(String name, void (*orderFunction)(double));
     void printValuesList();
+    void parseHttpResponce(String responce);
   private:
+    Command* commands;
     Order* receivedOrders;
     long requestTiming;
     int interval;
@@ -45,8 +53,10 @@ class Cloud
     String getRequestBody();
     SensorValue *sensorsList;
     void addSensorValue(SensorValue* value);
-    void parseHttpResponce(String responce);
+//    void parseHttpResponce(String responce);
     void executeOrder(String orderStr);
+    double stringToDouble(String doubleValue);
+    void addNewOrder(String orderName);
 };
 
 #endif

@@ -19,6 +19,7 @@ Cloud::Cloud(String login, String password, String device)
   server = intlerCloud;
 
   interval = DEFAULT_INTERVAL;
+  receivedOrders = NULL;
 }
 
 void Cloud::setLogin(String login) {
@@ -161,54 +162,78 @@ void Cloud::parseHttpResponce(String responce) {
 void Cloud::executeOrder(String str) {
   int nameEndPos = str.substring(1).indexOf("\"");
   String orderName = str.substring(1, nameEndPos + 1);
+  orderName.trim();
   String val = str.substring(str.indexOf(":") + 1);
-  Serial.println("name " + orderName + " val " + val);
+  val.trim();
   
-  Order* newOrder = new Order;
-  newOrder->name = orderName;
-  Order* iter = receivedOrders;
-  while (iter->next != NULL) 
+  addNewOrder(orderName);
+  double doubleVal = stringToDouble(val);
+
+  Command* iter = commands;
+  if (iter == NULL)
+    return;
+  do {
+    if (orderName.equals(iter->name))
+      (iter->procedure)(doubleVal); //OMG
     iter = iter->next;
-
-  iter->next = newOrder;
-  
-
-  float floatVar;
-  char floatbufVar[32];
-  val.toCharArray(floatbufVar,sizeof(floatbufVar));
-  floatVar=atof(floatbufVar);
-
-  int intVal = 0;
-  intVal = (int)floatVar;
-  if (ceil(floatVar) - floatVar < 0.001)
-    intVal = ceil(floatVar);
-
-  Serial.println("clouded val " + String(intVal));
-  
-  if (intVal = 1)  {
-    Serial.println("lightOn");
-    digitalWrite(8, false);
-    }
-  if (intVal = 0) {
-    Serial.println("lightOff");
-    digitalWrite(8, true); 
-    }
+  } while ((iter != NULL));
 }
 
+void Cloud::addNewOrder(String orderName) {
+  Order* newOrder = new Order;
+  newOrder->name = orderName;
+  newOrder->next = NULL;
+  
+  Order* iter = receivedOrders;
+  if (iter == NULL)
+    receivedOrders = newOrder; 
+  else {
+    while (iter->next != NULL) 
+      iter = iter->next;
+  
+    iter->next = newOrder;
+  }
+}
+
+double Cloud::stringToDouble(String str) {
+  char floatbufVar[32];
+  str.toCharArray(floatbufVar,sizeof(floatbufVar));
+  
+  return atof(floatbufVar);
+}
+
+void Cloud::addCommand(String name, void (*procedure)(double)) {
+  Command* newCommand = new Command;
+  newCommand->name = name;
+  newCommand->procedure = procedure;
+  newCommand->next = NULL;
+
+  Command* iter = commands;
+  if (iter == NULL)
+    commands = newCommand; 
+  else {
+    while (iter->next != NULL) 
+      iter = iter->next;
+  
+    iter->next = newCommand;
+  }
+}
  
 // директивы #include и код помещается здесь
 
 void Cloud::printValuesList() {
   Serial.println("xyita");
-  SensorValue* iter = sensorsList;
+  Command* iter = commands;
   if (iter != NULL) {
+    Serial.println("mda");
     while (iter->next != NULL) {
       Serial.println(iter->name);
-      Serial.println(iter->value);
+//      Serial.println(iter->value);
       Serial.println(iter->next == NULL);
       iter = iter->next;
     }
     Serial.println(iter->name);
-    Serial.println(iter->value);
+//    Serial.println(iter->value);
     Serial.println(iter->next == NULL);
   }
+}
