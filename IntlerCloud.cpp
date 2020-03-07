@@ -40,7 +40,7 @@ bool Cloud::updated() {
 
 void Cloud::sendValue(String name, double value, bool constantly) {
   SensorValue* newSensorValue = new SensorValue;
-  name.toCharArray(newSensorValue->name, 30);
+  newSensorValue->name = name;
   newSensorValue->value = value;
   newSensorValue->constantly = constantly;
   newSensorValue->next = NULL;
@@ -55,8 +55,14 @@ void Cloud::addSensorValue(SensorValue* value) {
   }
 
   SensorValue* iter = sensorsList;
-  while (iter->next != NULL) 
+  while (iter->next != NULL) {
+    if ((iter->name).equals(value->name)) {
+      iter->value = value->value;
+      iter->constantly = value->constantly;
+      return;
+    }
     iter = iter->next;
+  }
 
   (iter->next) = value;
 }
@@ -77,7 +83,7 @@ String Cloud::getRequestBody() {
     }
     requestBody += "\"" + String(iter->name) + "\":" + String(iter->value) + "}";
   }
-  requestBody += ", \"ordersAccepted\":[]}";
+  requestBody += ", \"ordersAccepted\":"+ getOrdersString() +"}";
   
   return requestBody;
 }
@@ -236,4 +242,32 @@ void Cloud::printValuesList() {
 //    Serial.println(iter->value);
     Serial.println(iter->next == NULL);
   }
+}
+
+String Cloud::getOrdersString() {
+  String result = "[";
+  Order* iter = receivedOrders;
+  if (iter != NULL) {
+    result += "\"" + iter->name + "\"";
+    while (iter->next != NULL) {
+      iter = iter->next;
+      result += ",\"" + iter->name + "\"";
+    }
+  }
+  result.concat("]");
+
+  clearOrders();
+  
+  return result;
+}
+
+void Cloud::clearOrders() {
+  Order* iter = receivedOrders;
+  Order* deletedOrder;
+  while (iter != NULL) {
+    deletedOrder = iter;
+    iter = iter->next;
+    delete(deletedOrder);
+  };
+  receivedOrders = NULL;
 }
