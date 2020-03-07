@@ -33,35 +33,39 @@ class Cloud
     void setLogin(String login);
     void setPassword(String password);
     void setDevice(String device);
-    
-    void setInterval(int interval);
+
     void connect();
     void run();
-    bool updated();
+    void setInterval(int interval);
+    
     void sendValue(String name, double value);
     void addCommand(String name, void (*orderFunction)(double));
-    void printValuesList();
-    void parseHttpResponce(String responce);
-    String getOrdersString();
   private:
-    Command* commands;
-    Order* receivedOrders;
-    long requestTiming;
-    int interval;
-    IPAddress* server;
-    IPAddress* generatedIp;
     String login;
     String password;
     String device;
-    bool isUpdated;
+
+    Order* receivedOrders;
+    Command* commands;
+    SensorValue* sensorsList;
+
+    IPAddress* server;
+    IPAddress* generatedIp;
+
+    long requestTiming;
+    int interval;
+
+    void addSensorValue(SensorValue* value);
+    void clearSensorsValues();
+
     void sendRequest();
     String getRequestBody();
-    SensorValue *sensorsList;
-    void addSensorValue(SensorValue* value);
-//    void parseHttpResponce(String responce);
+    String getOrdersString();
+    void parseHttpResponce(String responce);
+
     void executeOrder(String orderStr);
-    double stringToDouble(String doubleValue);
     void addNewOrder(String orderName);
+    double stringToDouble(String doubleValue);
     void clearOrders();
 };
 

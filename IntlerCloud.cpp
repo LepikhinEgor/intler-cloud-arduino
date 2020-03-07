@@ -36,17 +36,36 @@ void Cloud::setDevice(String device) {
   this->device = device;
 }
 
-bool Cloud::updated() {
-  return isUpdated;
-}
-
 void Cloud::sendValue(String name, double value) {
-  SensorValue* newSensorValue = new SensorValue;
-  newSensorValue->name = name;
-  newSensorValue->value = value;
-  newSensorValue->next = NULL;
 
-  addSensorValue(newSensorValue);
+  if (sensorsList == NULL) {
+    SensorValue* newSensorValue = new SensorValue;
+    newSensorValue->name = name;
+    newSensorValue->value = value;
+    newSensorValue->next = NULL;
+
+    sensorsList = newSensorValue; 
+    return;
+  }
+
+  SensorValue* iter = sensorsList;
+  while (iter->next != NULL) {
+    if ((iter->name).equals(name)) {
+      iter->value = value;
+      return;
+    }
+    iter = iter->next;
+  }
+
+  if (name.equals(iter->name))
+    iter->value = value;
+  else {
+    SensorValue* newSensorValue = new SensorValue;
+    newSensorValue->name = name;
+    newSensorValue->value = value;
+    newSensorValue->next = NULL;
+    (iter->next) = newSensorValue;
+  }
 }
 
 void Cloud::addSensorValue(SensorValue* value) {
@@ -106,6 +125,9 @@ void Cloud::sendRequest() {
   else {
     Serial.println("connection failed");
   }
+
+  clearOrders();
+  clearSensorsValues();
 
   String cloudInput;
   while (client.available()) {
@@ -180,7 +202,7 @@ void Cloud::executeOrder(String str) {
     return;
   do {
     if (orderName.equals(iter->name))
-      (iter->procedure)(doubleVal); //OMG
+      (iter->procedure)(doubleVal); 
     iter = iter->next;
   } while ((iter != NULL));
 }
@@ -237,8 +259,6 @@ String Cloud::getOrdersString() {
     }
   }
   result.concat("]");
-
-  clearOrders();
   
   return result;
 }
@@ -252,6 +272,17 @@ void Cloud::clearOrders() {
     delete(deletedOrder);
   };
   receivedOrders = NULL;
+}
+
+void Cloud::clearSensorsValues() {
+  SensorValue* iter = sensorsList;
+  SensorValue* deletedValue;
+  while (iter != NULL) {
+    deletedValue = iter;
+    iter = iter->next;
+    delete(deletedValue);
+  };
+  sensorsList = NULL;
 }
 
 void Cloud::setInterval(int interval) {
