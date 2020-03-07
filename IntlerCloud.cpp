@@ -40,11 +40,10 @@ bool Cloud::updated() {
   return isUpdated;
 }
 
-void Cloud::sendValue(String name, double value, bool constantly) {
+void Cloud::sendValue(String name, double value) {
   SensorValue* newSensorValue = new SensorValue;
   newSensorValue->name = name;
   newSensorValue->value = value;
-  newSensorValue->constantly = constantly;
   newSensorValue->next = NULL;
 
   addSensorValue(newSensorValue);
@@ -60,7 +59,6 @@ void Cloud::addSensorValue(SensorValue* value) {
   while (iter->next != NULL) {
     if ((iter->name).equals(value->name)) {
       iter->value = value->value;
-      iter->constantly = value->constantly;
       return;
     }
     iter = iter->next;
@@ -227,24 +225,6 @@ void Cloud::addCommand(String name, void (*procedure)(double)) {
   }
 }
  
-// директивы #include и код помещается здесь
-
-void Cloud::printValuesList() {
-  Serial.println("xyita");
-  Command* iter = commands;
-  if (iter != NULL) {
-    Serial.println("mda");
-    while (iter->next != NULL) {
-      Serial.println(iter->name);
-//      Serial.println(iter->value);
-      Serial.println(iter->next == NULL);
-      iter = iter->next;
-    }
-    Serial.println(iter->name);
-//    Serial.println(iter->value);
-    Serial.println(iter->next == NULL);
-  }
-}
 
 String Cloud::getOrdersString() {
   String result = "[";
@@ -272,4 +252,12 @@ void Cloud::clearOrders() {
     delete(deletedOrder);
   };
   receivedOrders = NULL;
+}
+
+void Cloud::setInterval(int interval) {
+  if (interval < 5000)
+    this->interval = 5000;
+  else
+    this->interval = interval;
+
 }

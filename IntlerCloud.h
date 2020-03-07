@@ -5,7 +5,7 @@
 #include "Arduino.h"
 #include <Ethernet2.h>
 
-#define DEFAULT_INTERVAL 5000
+#define DEFAULT_INTERVAL 10000
 
 struct Command {
   String name;
@@ -21,7 +21,6 @@ struct Order {
 struct SensorValue {
   String name;
   double value;
-  bool constantly;
   SensorValue *next;
 };
 
@@ -35,10 +34,11 @@ class Cloud
     void setPassword(String password);
     void setDevice(String device);
     
+    void setInterval(int interval);
     void connect();
     void run();
     bool updated();
-    void sendValue(String name, double value, bool constantly);
+    void sendValue(String name, double value);
     void addCommand(String name, void (*orderFunction)(double));
     void printValuesList();
     void parseHttpResponce(String responce);
