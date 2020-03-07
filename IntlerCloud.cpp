@@ -1,3 +1,5 @@
+#include "IntlerCloud.h"
+
 Cloud::Cloud()
 {
   login = password = device = "";

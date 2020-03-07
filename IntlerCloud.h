@@ -1,6 +1,10 @@
 #ifndef IntlerCloud_h
 #define IntlerCloud_h
 
+// #include "WProgram.h"
+#include "Arduino.h"
+#include <Ethernet2.h>
+
 #define DEFAULT_INTERVAL 5000
 
 struct Command {
