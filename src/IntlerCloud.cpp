@@ -88,7 +88,7 @@ void Cloud::addSensorValue(SensorValue* value) {
 
 String Cloud::getRequestBody() {
   String requestBody = "{\"login\":\"" + login + "\",";
-  requestBody += "\'password\':\"" + password + "\",";
+  requestBody += "\"password\":\"" + password + "\",";
   requestBody += "\"deviceName\":\"" + device + "\",";
   requestBody += "\"deviceType\":\"Arduino\",\"sensorsValue\":{";
 
@@ -108,64 +108,74 @@ String Cloud::getRequestBody() {
 }
 
 void Cloud::sendRequest() {
-  EthernetClient client;
-  String data = getRequestBody();
-  if (client.connect(*server, 8080)) {
-    Serial.println("connected");
-    client.println("POST " + String(URL) + " HTTP/1.1");
-    client.println("Host: 79.143.30.97:8080");
-    client.println("Content-Type: application/json");
-    client.println("Connection: close");
-    client.print("Content-Length: ");
-    client.println(data.length());
-    client.println();
-    client.print(data);
-    client.println();
-  }
-  else {
-    Serial.println("connection failed");
+  if (!waitResponce) {
+    bufClient = new EthernetClient;
+    String data = getRequestBody();
+    // Serial.println(data);
+    if ((*bufClient).connect(*server, 8080)) {
+      // Serial.println("connected");
+      (*bufClient).println("POST /intler-iot/send-device-data HTTP/1.1");
+      (*bufClient).println("Host: 192.0.0.2:8080");
+      (*bufClient).println("Content-Type: application/json");
+      (*bufClient).println("Connection: close");
+      (*bufClient).print("Content-Length: ");
+      (*bufClient).println(data.length());
+      (*bufClient).println();
+      (*bufClient).print(data);
+      (*bufClient).println();
+    }
+    else {
+      Serial.println("cannot connect to Intler cloud");
+    }
+
+    clearOrders();
+    clearSensorsValues();
+
+    requestTiming = millis();
+    waitResponce = true;
   }
 
-  clearOrders();
-  clearSensorsValues();
+  if (millis() - requestTiming > interval) {
+    waitResponce = false;
 
-  String cloudInput;
-  while (client.available()) {
-    char c = client.read();
-    cloudInput.concat(c);
+    String cloudInput = "";
+    while ((*bufClient).available()) {
+      char c = (*bufClient).read();
+      cloudInput.concat(c);
+    }
+
+    parseHttpResponce(cloudInput.substring(cloudInput.indexOf("{"),cloudInput.indexOf("}") + 1));
+    delete(bufClient);
   }
-      Serial.println(cloudInput);
-  parseHttpResponce(cloudInput);
-  cloudInput = "";
 }
 
 void Cloud::connect() {
-  Serial.println("try connect");
+  Serial.println("Connecting to internet...");
   byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xEA };
 
   IPAddress generatedSelfId(192,168,0,54);
   generatedIp = &generatedSelfId;
-  Ethernet.begin(mac, *generatedIp);
-  
-delay(4000);
-  Serial.println("Connected");
 
+  if (Ethernet.begin(mac) == 0) {
+    Serial.println("Failed connection using DHCP");
+    Ethernet.begin(mac, *generatedIp);
+  } else {
+    Serial.println("Success connected");
+  }
+  
+delay(3000);
 }
 
 void Cloud::run() {
-  if (millis() - requestTiming > interval) {
     sendRequest();
-
-    requestTiming = millis();
-  }
 }
 
 void Cloud::parseHttpResponce(String responce) {
-  String body = responce.substring(responce.indexOf("{"),responce.indexOf("}") + 1); //TODO
+  // String responce = responce.substring(responce.indexOf("{"),responce.indexOf("}") + 1); //TODO
 
-  int bodyPos = body.indexOf("{");
+  int bodyPos = responce.indexOf("{");
 
-  String curOrderStr = body.substring(1); 
+  String curOrderStr = responce.substring(1); 
   while(true) {
     String order;
     int commaPos = curOrderStr.indexOf(",");

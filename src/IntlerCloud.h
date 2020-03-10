@@ -59,6 +59,8 @@ class Cloud
     void addSensorValue(SensorValue* value);
     void clearSensorsValues();
 
+    bool waitResponce;
+    EthernetClient* bufClient;
     void sendRequest();
     String getRequestBody();
     String getOrdersString();
