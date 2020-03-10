@@ -16,8 +16,8 @@ Cloud::Cloud(String login, String password, String device)
   this->password = password;
   this->device = device;
 
-//  IPAddress* intlerCloud(79, 143, 30, 97);
-  IPAddress* intlerCloud = new IPAddress(192,168,0,2);
+  IPAddress* intlerCloud(79, 143, 30, 97);
+  // IPAddress* intlerCloud = new IPAddress(192,168,0,2);
   server = intlerCloud;
 
   interval = DEFAULT_INTERVAL;
@@ -112,8 +112,8 @@ void Cloud::sendRequest() {
   String data = getRequestBody();
   if (client.connect(*server, 8080)) {
     Serial.println("connected");
-    client.println("POST /intler_iot_war_exploded/send-device-data HTTP/1.1");
-    client.println("Host: 192.168.0.2:8080");//????????????????
+    client.println("POST " + URL + " HTTP/1.1");
+    client.println("Host: 79.143.30.97:8080");
     client.println("Content-Type: application/json");
     client.println("Connection: close");
     client.print("Content-Length: ");

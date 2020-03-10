@@ -6,6 +6,7 @@
 #include <Ethernet2.h>
 
 #define DEFAULT_INTERVAL 10000
+#define URL "/intler-iot/send-device-data"
 
 struct Command {
   String name;
