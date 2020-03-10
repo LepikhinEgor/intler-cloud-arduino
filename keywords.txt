@@ -6,7 +6,8 @@
 # Datatypes (KEYWORD1)
 #######################################
 
-Cloud	KEYWORD1	Cloud
+Cloud	KEYWORD1 IntlerCloud
+IntlerCloud KEYWORD1
 
 #######################################
 # Methods and Functions (KEYWORD2)
