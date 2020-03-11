@@ -8,7 +8,7 @@ void printValue(double val) {
 
 int luminosity, temperature;
 
-Cloud cloud("demo_user", "qwerty", "myArduino");
+Cloud cloud("you_login", "your_password", "myArduino");
 
 void setup() {
   Serial.begin(9600);

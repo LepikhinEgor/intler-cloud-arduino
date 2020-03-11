@@ -151,7 +151,10 @@ void Cloud::sendRequest() {
 
 void Cloud::connect() {
   Serial.println("Connecting to internet...");
-  byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xEA };
+  // byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xEA };
+  byte mac[6];
+  for (int i = 0; i < 6; i++)
+    mac[i] = random(255);
 
   IPAddress generatedSelfId(192,168,0,54);
   generatedIp = &generatedSelfId;
@@ -182,7 +185,7 @@ void Cloud::parseHttpResponce(String responce) {
     if (commaPos == -1) {
       order = curOrderStr.substring(0, curOrderStr.indexOf("}"));
       if (curOrderStr.indexOf("}") < 2) {
-        Serial.println("No command");
+        //Serial.println("No command");
         return;
         }
       executeOrder(order);
