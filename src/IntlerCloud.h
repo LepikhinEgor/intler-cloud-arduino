@@ -41,6 +41,8 @@ class Cloud
     
     void sendValue(String name, double value);
     void addCommand(String name, void (*orderFunction)(double));
+
+    void changeCloudIP(byte ip1, byte ip2, byte ip3, byte ip4);
   private:
     String login;
     String password;

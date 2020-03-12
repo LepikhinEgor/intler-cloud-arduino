@@ -4,8 +4,7 @@ Cloud::Cloud()
 {
   login = password = device = "";
   
-  IPAddress intlerCloud(79, 143, 30, 97);
-  server = &intlerCloud;
+  server = new IPAddress(79, 143, 30, 97);
 
   interval = DEFAULT_INTERVAL;
 }
@@ -16,9 +15,8 @@ Cloud::Cloud(String login, String password, String device)
   this->password = password;
   this->device = device;
 
-  IPAddress* intlerCloud = new IPAddress(79, 143, 30, 97);
+  server = new IPAddress(79, 143, 30, 97);
   // IPAddress* intlerCloud = new IPAddress(192,168,0,2);
-  server = intlerCloud;
 
   interval = DEFAULT_INTERVAL;
   receivedOrders = NULL;
@@ -151,7 +149,6 @@ void Cloud::sendRequest() {
 
 void Cloud::connect() {
   Serial.println("Connecting to internet...");
-  // byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xEA };
   byte mac[6];
   for (int i = 0; i < 6; i++)
     mac[i] = random(255);
@@ -304,4 +301,9 @@ void Cloud::setInterval(int interval) {
   else
     this->interval = interval;
 
+}
+
+void Cloud::changeCloudIP(byte ip1, byte ip2, byte ip3, byte ip4) {
+  delete(server);
+  server = new IPAddress(ip1, ip2, ip3, ip4);
 }

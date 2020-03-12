@@ -56,3 +56,12 @@ cloud.addCommand("music_volume", printValue);
 ```
 It means that function printValue(double value) will be call, when Arduino received data with name "music_volume" from Intler cloud.
 
+If you want connect to your local server you need call function  *changeCloudIP()* in ***setup()***:
+```cpp
+intlerCloud.changeCloudIP(192,168,0,2);
+```
+You must specify the ip of computer on which you deployed the server. You can get it:
+ - Windows - open cmd/PowerShell and write *ipconfig*
+ - Linux - open console and write *ifconfig*
+
+
